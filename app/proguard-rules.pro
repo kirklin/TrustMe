@@ -14,3 +14,7 @@
 
 # Suppress Xposed API warnings
 -dontwarn de.robv.android.xposed.**
+
+# Disable code optimization — R8 optimizes away calls to compileOnly classes
+# (XposedBridge.log etc.) since it thinks they have no side effects at runtime
+-dontoptimize
