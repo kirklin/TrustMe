@@ -3,6 +3,11 @@
 # 保留 Xposed 入口类
 -keep class hk.kirk.trustme.MainHook { *; }
 
+# 保留 SettingsActivity.isModuleActive — MainHook 通过 Xposed 反射按名称访问
+-keep class hk.kirk.trustme.ui.SettingsActivity {
+    static boolean isModuleActive;
+}
+
 # 保留所有 Xposed 接口实现
 -keep class * implements de.robv.android.xposed.IXposedHookLoadPackage { *; }
 -keep class * implements de.robv.android.xposed.IXposedHookZygoteInit { *; }
