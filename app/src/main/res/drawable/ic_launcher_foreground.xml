@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!--
+        6-petal asterisk with overlap effect.
+        Each petal is a fat capsule (rounded both ends) extending from
+        past-center outward. Draw order creates the pinwheel overlap.
+        Last step: redraw left half of first petal on top for the weave.
+    -->
+
+    <!-- 1. Upper-left (300°) — drawn first, at bottom of stack -->
+    <group android:pivotX="54" android:pivotY="54" android:rotation="300">
+        <path
+            android:fillColor="#19318A"
+            android:pathData="M46,32 A8,8 0 0 1 54,24 A8,8 0 0 1 62,32 L62,48 A8,8 0 0 1 54,56 A8,8 0 0 1 46,48 Z" />
+    </group>
+
+    <!-- 2. Top (0°) — overlaps upper-left -->
+    <group android:pivotX="54" android:pivotY="54" android:rotation="0">
+        <path
+            android:fillColor="#151E60"
+            android:pathData="M46,32 A8,8 0 0 1 54,24 A8,8 0 0 1 62,32 L62,48 A8,8 0 0 1 54,56 A8,8 0 0 1 46,48 Z" />
+    </group>
+
+    <!-- 3. Upper-right (60°) — overlaps top -->
+    <group android:pivotX="54" android:pivotY="54" android:rotation="60">
+        <path
+            android:fillColor="#008575"
+            android:pathData="M46,32 A8,8 0 0 1 54,24 A8,8 0 0 1 62,32 L62,48 A8,8 0 0 1 54,56 A8,8 0 0 1 46,48 Z" />
+    </group>
+
+    <!-- 4. Lower-right (120°) — overlaps upper-right -->
+    <group android:pivotX="54" android:pivotY="54" android:rotation="120">
+        <path
+            android:fillColor="#1BBAA6"
+            android:pathData="M46,32 A8,8 0 0 1 54,24 A8,8 0 0 1 62,32 L62,48 A8,8 0 0 1 54,56 A8,8 0 0 1 46,48 Z" />
+    </group>
+
+    <!-- 5. Bottom (180°) — overlaps lower-right -->
+    <group android:pivotX="54" android:pivotY="54" android:rotation="180">
+        <path
+            android:fillColor="#208DCA"
+            android:pathData="M46,32 A8,8 0 0 1 54,24 A8,8 0 0 1 62,32 L62,48 A8,8 0 0 1 54,56 A8,8 0 0 1 46,48 Z" />
+    </group>
+
+    <!-- 6. Lower-left (240°) — overlaps bottom -->
+    <group android:pivotX="54" android:pivotY="54" android:rotation="240">
+        <path
+            android:fillColor="#234EAB"
+            android:pathData="M46,32 A8,8 0 0 1 54,24 A8,8 0 0 1 62,32 L62,48 A8,8 0 0 1 54,56 A8,8 0 0 1 46,48 Z" />
+    </group>
+
+    <!-- 7. Weave fix: redraw left half of upper-left (300°) on top of lower-left -->
+    <group android:pivotX="54" android:pivotY="54" android:rotation="300">
+        <path
+            android:fillColor="#19318A"
+            android:pathData="M46,32 A8,8 0 0 1 54,24 L54,56 A8,8 0 0 0 46,48 Z" />
+    </group>
+
+    <!-- Center white rounded square -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50.5,47 L57.5,47 A3.5,3.5 0 0 1 61,50.5 L61,57.5 A3.5,3.5 0 0 1 57.5,61 L50.5,61 A3.5,3.5 0 0 1 47,57.5 L47,50.5 A3.5,3.5 0 0 1 50.5,47 Z" />
+</vector>
