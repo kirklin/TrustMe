@@ -8,11 +8,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Immutable
 data class TrustMeColors(
     val background: Color = Color.Black,
+    val surface: Color = Color(0xFF111111),
+    val border: Color = Color(0xFF2F3336),
     val divider: Color = Color(0xFF2F3336),
     val accent: Color = Color(0xFF1D9BF0),
     val green: Color = Color(0xFF00BA7C),
@@ -32,6 +36,10 @@ data class TrustMeTypography(
         fontSize = 22.sp,
         letterSpacing = (-0.3).sp,
     ),
+    val titleMedium: TextStyle = TextStyle(
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 17.sp,
+    ),
     val body: TextStyle = TextStyle(
         fontWeight = FontWeight.Normal,
         fontSize = 15.sp,
@@ -40,8 +48,8 @@ data class TrustMeTypography(
         fontWeight = FontWeight.Normal,
         fontSize = 13.sp,
     ),
-    val sectionHeader: TextStyle = TextStyle(
-        fontWeight = FontWeight.Normal,
+    val label: TextStyle = TextStyle(
+        fontWeight = FontWeight.Medium,
         fontSize = 13.sp,
     ),
     val mono: TextStyle = TextStyle(
@@ -51,12 +59,21 @@ data class TrustMeTypography(
     ),
 )
 
+@Immutable
+data class TrustMeShapes(
+    val card: Dp = 14.dp,
+    val inner: Dp = 10.dp,
+    val chip: Dp = 6.dp,
+)
+
 val LocalTrustMeColors = staticCompositionLocalOf { TrustMeColors() }
 val LocalTrustMeTypography = staticCompositionLocalOf { TrustMeTypography() }
+val LocalTrustMeShapes = staticCompositionLocalOf { TrustMeShapes() }
 
 object TrustMe {
     val colors: TrustMeColors @Composable get() = LocalTrustMeColors.current
     val type: TrustMeTypography @Composable get() = LocalTrustMeTypography.current
+    val shapes: TrustMeShapes @Composable get() = LocalTrustMeShapes.current
 }
 
 @Composable
@@ -64,6 +81,7 @@ fun TrustMeTheme(content: @Composable () -> Unit) {
     CompositionLocalProvider(
         LocalTrustMeColors provides TrustMeColors(),
         LocalTrustMeTypography provides TrustMeTypography(),
+        LocalTrustMeShapes provides TrustMeShapes(),
         content = content,
     )
 }

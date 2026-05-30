@@ -1,7 +1,8 @@
 package hk.kirk.trustme.ui.components
 
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -26,7 +27,10 @@ fun SimpleSwitch(
     val colors = TrustMe.colors
     val progress by animateFloatAsState(
         targetValue = if (checked) 1f else 0f,
-        animationSpec = tween(150),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium,
+        ),
         label = "sw",
     )
 
@@ -42,14 +46,14 @@ fun SimpleSwitch(
         val h = size.height
         val r = h / 2f
 
-        // 轨道
+        // Track
         drawRoundRect(
             color = lerp(colors.switchOff, colors.switchOn, progress),
             size = Size(w, h),
             cornerRadius = CornerRadius(r),
         )
 
-        // 滑块
+        // Thumb
         val thumbR = h * 0.38f
         val pad = (h - thumbR * 2) / 2f
         val cx = pad + thumbR + (w - 2 * pad - 2 * thumbR) * progress
