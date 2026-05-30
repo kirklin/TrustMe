@@ -152,11 +152,11 @@ private fun SettingsContent(
         Divider(modifier = Modifier.padding(start = 20.dp))
         InfoRow(
             title = "GitHub",
-            subtitle = "github.com/kirklin",
+            subtitle = "github.com/kirklin/TrustMe",
             showArrow = true,
             onClick = {
                 context.startActivity(
-                    Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/kirklin"))
+                    Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/kirklin/TrustMe"))
                 )
             },
         )

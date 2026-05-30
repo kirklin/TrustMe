@@ -46,5 +46,5 @@
     <string name="pref_author_title">作者</string>
     <string name="pref_author_summary">Kirk Lin</string>
     <string name="pref_github_title">GitHub</string>
-    <string name="pref_github_summary">https://github.com/kirklin</string>
+    <string name="pref_github_summary">https://github.com/kirklin/TrustMe</string>
 </resources>
