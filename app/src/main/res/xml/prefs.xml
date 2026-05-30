@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- 常规设置 -->
+    <PreferenceCategory
+        android:key="category_general"
+        android:title="@string/pref_category_general">
+
+        <SwitchPreferenceCompat
+            android:key="enabled"
+            android:title="@string/pref_enabled_title"
+            android:summary="@string/pref_enabled_summary"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="logging"
+            android:title="@string/pref_logging_title"
+            android:summary="@string/pref_logging_summary"
+            android:defaultValue="true" />
+
+    </PreferenceCategory>
+
+    <!-- Hook 模块开关 -->
+    <PreferenceCategory
+        android:key="category_hooks"
+        android:title="@string/pref_category_hooks"
+        android:dependency="enabled">
+
+        <SwitchPreferenceCompat
+            android:key="hook_sslcontext"
+            android:title="@string/pref_hook_sslcontext_title"
+            android:summary="@string/pref_hook_sslcontext_summary"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="hook_trustmanager"
+            android:title="@string/pref_hook_trustmanager_title"
+            android:summary="@string/pref_hook_trustmanager_summary"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="hook_conscrypt"
+            android:title="@string/pref_hook_conscrypt_title"
+            android:summary="@string/pref_hook_conscrypt_summary"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="hook_okhttp"
+            android:title="@string/pref_hook_okhttp_title"
+            android:summary="@string/pref_hook_okhttp_summary"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="hook_urlconnection"
+            android:title="@string/pref_hook_urlconnection_title"
+            android:summary="@string/pref_hook_urlconnection_summary"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="hook_webview"
+            android:title="@string/pref_hook_webview_title"
+            android:summary="@string/pref_hook_webview_summary"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="hook_apache"
+            android:title="@string/pref_hook_apache_title"
+            android:summary="@string/pref_hook_apache_summary"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="hook_nsc"
+            android:title="@string/pref_hook_nsc_title"
+            android:summary="@string/pref_hook_nsc_summary"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="hook_conscryptsocket"
+            android:title="@string/pref_hook_conscryptsocket_title"
+            android:summary="@string/pref_hook_conscryptsocket_summary"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="hook_pinmanager"
+            android:title="@string/pref_hook_pinmanager_title"
+            android:summary="@string/pref_hook_pinmanager_summary"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="hook_cronet"
+            android:title="@string/pref_hook_cronet_title"
+            android:summary="@string/pref_hook_cronet_summary"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="hook_thirdparty"
+            android:title="@string/pref_hook_thirdparty_title"
+            android:summary="@string/pref_hook_thirdparty_summary"
+            android:defaultValue="true" />
+
+    </PreferenceCategory>
+
+    <!-- 关于 -->
+    <PreferenceCategory
+        android:key="category_about"
+        android:title="@string/pref_category_about">
+
+        <Preference
+            android:key="version"
+            android:title="@string/pref_version_title"
+            android:selectable="false" />
+
+        <Preference
+            android:key="author"
+            android:title="@string/pref_author_title"
+            android:summary="@string/pref_author_summary"
+            android:selectable="false" />
+
+        <Preference
+            android:key="github"
+            android:title="@string/pref_github_title"
+            android:summary="@string/pref_github_summary"
+            android:selectable="false" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

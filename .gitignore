@@ -1,0 +1,15 @@
+# TrustMe
+_reference/
+.DS_Store
+*.iml
+.idea/
+.gradle/
+build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+.kotlin/
+*.apk
+*.ap_
+*.aab

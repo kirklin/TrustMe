@@ -1,0 +1,12 @@
+<resources>
+    <!-- Compose 管理所有 UI 样式，这里仅保留窗口级配置 -->
+    <style name="Theme.TrustMe" parent="android:Theme.Material.NoActionBar">
+        <item name="android:colorBackground">#000000</item>
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
+</resources>

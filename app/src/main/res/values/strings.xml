@@ -1,0 +1,50 @@
+<resources>
+    <string name="app_name">TrustMe</string>
+    <string name="xposed_description">Bypass SSL certificate pinning for all apps.</string>
+
+    <!-- 状态卡片 -->
+    <string name="status_active_title">模块已激活</string>
+    <string name="status_active_subtitle">LSPosed 框架已加载，Hook 正常运行</string>
+    <string name="status_inactive_title">模块未激活</string>
+    <string name="status_inactive_subtitle">请在 LSPosed Manager 中启用本模块</string>
+
+    <!-- 设置界面 -->
+    <string name="pref_category_general">常规设置</string>
+    <string name="pref_enabled_title">全局开关</string>
+    <string name="pref_enabled_summary">启用/禁用所有 SSL Pinning 绕过</string>
+    <string name="pref_logging_title">Hook 日志</string>
+    <string name="pref_logging_summary">记录每次被绕过的 SSL 验证调用</string>
+
+    <string name="pref_category_hooks">Hook 模块</string>
+    <string name="pref_hook_sslcontext_title">SSLContext.init</string>
+    <string name="pref_hook_sslcontext_summary">替换 TrustManager 为信任一切的实现</string>
+    <string name="pref_hook_trustmanager_title">TrustManager / TrustManagerFactory</string>
+    <string name="pref_hook_trustmanager_summary">绕过证书验证方法</string>
+    <string name="pref_hook_conscrypt_title">Conscrypt TrustManagerImpl</string>
+    <string name="pref_hook_conscrypt_summary">动态反射绕过 checkTrustedRecursive / verifyChain</string>
+    <string name="pref_hook_okhttp_title">OkHttp 2.x / 3.x / 4.x+</string>
+    <string name="pref_hook_okhttp_summary">绕过 CertificatePinner 和 OkHostnameVerifier</string>
+    <string name="pref_hook_urlconnection_title">HttpsURLConnection</string>
+    <string name="pref_hook_urlconnection_summary">无效化 HostnameVerifier 和 SSLSocketFactory</string>
+    <string name="pref_hook_webview_title">WebView</string>
+    <string name="pref_hook_webview_summary">自动处理 WebView SSL 错误</string>
+    <string name="pref_hook_apache_title">Apache HTTP Client</string>
+    <string name="pref_hook_apache_summary">替换 DefaultHttpClient 和 SSLSocketFactory</string>
+    <string name="pref_hook_nsc_title">Network Security Config</string>
+    <string name="pref_hook_nsc_summary">绕过 Android 7+ 网络安全配置</string>
+    <string name="pref_hook_conscryptsocket_title">Conscrypt Socket</string>
+    <string name="pref_hook_conscryptsocket_summary">绕过底层 Socket 证书链验证</string>
+    <string name="pref_hook_pinmanager_title">Conscrypt PinManager</string>
+    <string name="pref_hook_pinmanager_summary">绕过 Conscrypt 内置 Pin 管理</string>
+    <string name="pref_hook_cronet_title">Cronet 引擎</string>
+    <string name="pref_hook_cronet_summary">绕过 Chromium Cronet SSL 配置</string>
+    <string name="pref_hook_thirdparty_title">第三方库</string>
+    <string name="pref_hook_thirdparty_summary">xutils / httpclientandroidlib</string>
+
+    <string name="pref_category_about">关于</string>
+    <string name="pref_version_title">版本</string>
+    <string name="pref_author_title">作者</string>
+    <string name="pref_author_summary">Kirk Lin</string>
+    <string name="pref_github_title">GitHub</string>
+    <string name="pref_github_summary">https://github.com/kirklin</string>
+</resources>

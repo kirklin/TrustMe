@@ -1,0 +1,58 @@
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.plugin.compose")
+}
+
+android {
+    namespace = "hk.kirk.trustme"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "hk.kirk.trustme"
+        minSdk = 26
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0.0"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+
+    buildFeatures {
+        compose = true
+    }
+
+    // Apache HTTP legacy 库支持
+    useLibrary("org.apache.http.legacy")
+}
+
+dependencies {
+    // Xposed API — compileOnly，不打包进 APK
+    compileOnly("de.robv.android.xposed:api:82")
+
+    // Apache HTTP 组件
+    implementation("org.apache.httpcomponents:httpcore:4.4.16")
+
+    // Jetpack Compose (2026.05.01 BOM)
+    val composeBom = platform("androidx.compose:compose-bom:2026.05.01")
+    implementation(composeBom)
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.animation:animation")
+    implementation("androidx.activity:activity-compose:1.13.0")
+}
