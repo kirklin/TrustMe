@@ -17,5 +17,3 @@
 # Xposed API 警告抑制
 -dontwarn de.robv.android.xposed.**
 
-# 保留 META-INF 资源文件名
--keepresourcefilenames
