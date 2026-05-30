@@ -37,9 +37,6 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
         PrefsHelper.init()
         Logger.i("$TAG Prefs 可读: ${PrefsHelper.canReadPrefs()}, 全局开关: ${PrefsHelper.isEnabled()}")
 
-        // 设置日志文件权限（Zygote 以 root 运行，可以绕过 SELinux）
-        setupLogPermissions()
-
         // Zygote 级别：动态反射 Hook TrustManagerImpl.checkTrustedRecursive
         // 这是最底层的 Hook 点，无需 ClassLoader
         // 注意：Hook 回调内部会动态检查开关状态，关闭开关后不会绕过 SSL
@@ -48,32 +45,6 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
             Logger.i("$TAG Zygote 级别 Conscrypt Hook 完成（回调内含运行时开关检查）")
         } catch (e: Throwable) {
             Logger.e("$TAG Zygote 级别 Hook 失败", e)
-        }
-    }
-
-    /**
-     * 在 Zygote 进程（root）中设置日志文件权限，确保被 Hook 的 App 进程可以写入。
-     * 仅靠 Unix chmod 不够，还需要设置 SELinux 上下文。
-     */
-    private fun setupLogPermissions() {
-        try {
-            val logDir = "/data/data/$MY_PACKAGE/shared_prefs"
-            val logFile = "$logDir/trustme_logs.jsonl"
-            // chmod: 目录 777, 文件 666
-            // chcon: 将日志文件的 SELinux 标签设为 system_data_file 以允许跨 App 访问
-            val cmds = arrayOf(
-                "sh", "-c",
-                "chmod 711 /data/data/$MY_PACKAGE 2>/dev/null; " +
-                "chmod 777 $logDir 2>/dev/null; " +
-                "touch $logFile; " +
-                "chmod 666 $logFile; " +
-                "chcon u:object_r:system_data_file:s0 $logDir 2>/dev/null; " +
-                "chcon u:object_r:system_data_file:s0 $logFile 2>/dev/null"
-            )
-            Runtime.getRuntime().exec(cmds)
-            Logger.i("$TAG 日志文件权限设置完成")
-        } catch (e: Throwable) {
-            Logger.e("$TAG 日志文件权限设置失败", e)
         }
     }
 
