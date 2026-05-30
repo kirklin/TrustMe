@@ -1,7 +1,7 @@
 package hk.kirk.trustme.hooks
 
 import de.robv.android.xposed.XC_MethodHook
-import hk.kirk.trustme.utils.PrefsHelper
+import hk.kirk.trustme.xprefs.HookPrefs
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import hk.kirk.trustme.utils.Logger
 import java.security.cert.X509Certificate
@@ -31,8 +31,7 @@ object OkHttpHook {
                 "check", String::class.java, List::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("okhttp")) return
+                        if (!HookPrefs.isHookActive("okhttp")) return
                         param.result = true
                     }
                 }
@@ -54,8 +53,7 @@ object OkHttpHook {
                 "check", String::class.java, List::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("okhttp")) return
+                        if (!HookPrefs.isHookActive("okhttp")) return
                         param.result = null
                     }
                 }
@@ -79,8 +77,7 @@ object OkHttpHook {
                 "kotlin.jvm.functions.Function0",
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("okhttp")) return
+                        if (!HookPrefs.isHookActive("okhttp")) return
                         param.result = null
                     }
                 }
@@ -104,8 +101,7 @@ object OkHttpHook {
                 "verify", String::class.java, SSLSession::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("okhttp")) return
+                        if (!HookPrefs.isHookActive("okhttp")) return
                         param.result = true
                     }
                 }
@@ -124,8 +120,7 @@ object OkHttpHook {
                 "verify", String::class.java, X509Certificate::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("okhttp")) return
+                        if (!HookPrefs.isHookActive("okhttp")) return
                         param.result = true
                     }
                 }
@@ -146,8 +141,7 @@ object OkHttpHook {
                 "findMatchingPins", String::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("okhttp")) return
+                        if (!HookPrefs.isHookActive("okhttp")) return
                         param.args[0] = ""
                     }
                 }

@@ -4,7 +4,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import hk.kirk.trustme.trust.TrustAllHostnameVerifier
 import hk.kirk.trustme.utils.Logger
-import hk.kirk.trustme.utils.PrefsHelper
+import hk.kirk.trustme.xprefs.HookPrefs
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSocketFactory
@@ -34,8 +34,7 @@ object ThirdPartyHook {
                 "setSslSocketFactory", SSLSocketFactory::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("thirdparty")) return
+                        if (!HookPrefs.isHookActive("thirdparty")) return
                         param.args[0] = createEmptySSLFactory()
                     }
                 }
@@ -47,8 +46,7 @@ object ThirdPartyHook {
                 "setHostnameVerifier", HostnameVerifier::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("thirdparty")) return
+                        if (!HookPrefs.isHookActive("thirdparty")) return
                         param.args[0] = TrustAllHostnameVerifier.getInstance()
                     }
                 }
@@ -75,8 +73,7 @@ object ThirdPartyHook {
                 Array<String>::class.java, Boolean::class.javaPrimitiveType,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("thirdparty")) return
+                        if (!HookPrefs.isHookActive("thirdparty")) return
                         param.result = null
                     }
                 }

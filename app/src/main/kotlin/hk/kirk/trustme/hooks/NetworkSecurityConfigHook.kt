@@ -3,7 +3,7 @@ package hk.kirk.trustme.hooks
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import hk.kirk.trustme.utils.Logger
-import hk.kirk.trustme.utils.PrefsHelper
+import hk.kirk.trustme.xprefs.HookPrefs
 import java.security.cert.X509Certificate
 
 /**
@@ -21,8 +21,7 @@ object NetworkSecurityConfigHook {
                 List::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("nsc")) return
+                        if (!HookPrefs.isHookActive("nsc")) return
                         param.result = null
                     }
                 }
@@ -40,8 +39,7 @@ object NetworkSecurityConfigHook {
                 Array<X509Certificate>::class.java, String::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("nsc")) return
+                        if (!HookPrefs.isHookActive("nsc")) return
                         param.result = null
                     }
                 }

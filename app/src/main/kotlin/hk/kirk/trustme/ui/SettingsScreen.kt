@@ -3,7 +3,6 @@ package hk.kirk.trustme.ui
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,12 +31,14 @@ import hk.kirk.trustme.ui.components.SectionHeader
 import hk.kirk.trustme.ui.components.StatusRow
 import hk.kirk.trustme.ui.components.SwitchRow
 import hk.kirk.trustme.ui.theme.TrustMe
+import hk.kirk.trustme.xprefs.XposedPrefs
+import hk.kirk.trustme.xprefs.rememberBooleanState
 
 @Composable
 fun SettingsScreen(
     isModuleActive: Boolean,
     versionName: String,
-    prefs: PrefAccessor,
+    prefs: XposedPrefs.ModuleSide,
 ) {
     var showLogs by remember { mutableStateOf(false) }
 
@@ -57,7 +58,7 @@ fun SettingsScreen(
 private fun SettingsContent(
     isModuleActive: Boolean,
     versionName: String,
-    prefs: PrefAccessor,
+    prefs: XposedPrefs.ModuleSide,
     onShowLogs: () -> Unit,
 ) {
     val colors = TrustMe.colors
@@ -99,19 +100,9 @@ private fun SettingsContent(
 
         // ── 常规设置 ──
         SectionHeader(title = "常规设置")
-        SwitchRow(
-            title = "全局开关",
-            subtitle = "启用/禁用所有 SSL Pinning 绕过",
-            checked = prefs.getBoolean("enabled", true),
-            onCheckedChange = { prefs.putBoolean("enabled", it) },
-        )
+        HookItem(prefs, "enabled", "全局开关", "启用/禁用所有 SSL Pinning 绕过")
         Divider(modifier = Modifier.padding(start = 20.dp))
-        SwitchRow(
-            title = "Hook 日志",
-            subtitle = "记录每次被绕过的 SSL 验证调用",
-            checked = prefs.getBoolean("logging", true),
-            onCheckedChange = { prefs.putBoolean("logging", it) },
-        )
+        HookItem(prefs, "logging", "Hook 日志", "记录每次被绕过的 SSL 验证调用")
         Divider(modifier = Modifier.padding(start = 20.dp))
         InfoRow(
             title = "查看日志",
@@ -166,31 +157,13 @@ private fun SettingsContent(
 }
 
 @Composable
-private fun HookItem(prefs: PrefAccessor, key: String, title: String, subtitle: String) {
+private fun HookItem(prefs: XposedPrefs.ModuleSide, key: String, title: String, subtitle: String) {
+    val state = prefs.rememberBooleanState(key, true)
     SwitchRow(
         title = title,
         subtitle = subtitle,
-        checked = prefs.getBoolean(key, true),
-        onCheckedChange = { prefs.putBoolean(key, it) },
-        isMono = true,
+        checked = state.value,
+        onCheckedChange = { state.value = it },
+        isMono = key.startsWith("hook_"),
     )
-}
-
-class PrefAccessor(
-    private val prefs: android.content.SharedPreferences,
-    private val onPrefsChanged: (() -> Unit)? = null,
-) {
-    private val states = mutableMapOf<String, androidx.compose.runtime.MutableState<Boolean>>()
-
-    fun getBoolean(key: String, default: Boolean): Boolean =
-        getOrCreate(key, default).value
-
-    fun putBoolean(key: String, value: Boolean) {
-        getOrCreate(key, prefs.getBoolean(key, true)).value = value
-        prefs.edit().putBoolean(key, value).commit()  // 用 commit() 确保同步写入
-        onPrefsChanged?.invoke()  // 写入后修复文件权限
-    }
-
-    private fun getOrCreate(key: String, default: Boolean) =
-        states.getOrPut(key) { mutableStateOf(prefs.getBoolean(key, default)) }
 }

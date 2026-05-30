@@ -4,7 +4,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.*
 import hk.kirk.trustme.trust.TrustAllManager
 import hk.kirk.trustme.utils.Logger
-import hk.kirk.trustme.utils.PrefsHelper
+import hk.kirk.trustme.xprefs.HookPrefs
 import org.apache.http.conn.ClientConnectionManager
 import org.apache.http.conn.scheme.PlainSocketFactory
 import org.apache.http.conn.scheme.Scheme
@@ -45,8 +45,7 @@ object ApacheHttpHook {
                 DefaultHttpClient::class.java,
                 object : XC_MethodHook() {
                     override fun afterHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("apache")) return
+                        if (!HookPrefs.isHookActive("apache")) return
                         setObjectField(param.thisObject, "defaultParams", null)
                         setObjectField(param.thisObject, "connManager", createSCCM())
                     }
@@ -61,8 +60,7 @@ object ApacheHttpHook {
                 DefaultHttpClient::class.java, HttpParams::class.java,
                 object : XC_MethodHook() {
                     override fun afterHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("apache")) return
+                        if (!HookPrefs.isHookActive("apache")) return
                         setObjectField(param.thisObject, "defaultParams", param.args[0] as HttpParams)
                         setObjectField(param.thisObject, "connManager", createSCCM())
                     }
@@ -77,8 +75,7 @@ object ApacheHttpHook {
                 DefaultHttpClient::class.java, ClientConnectionManager::class.java, HttpParams::class.java,
                 object : XC_MethodHook() {
                     override fun afterHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("apache")) return
+                        if (!HookPrefs.isHookActive("apache")) return
                         val params = param.args[1] as HttpParams
                         setObjectField(param.thisObject, "defaultParams", params)
                         setObjectField(
@@ -104,8 +101,7 @@ object ApacheHttpHook {
                 org.apache.http.conn.scheme.HostNameResolver::class.java,
                 object : XC_MethodHook() {
                     override fun afterHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("apache")) return
+                        if (!HookPrefs.isHookActive("apache")) return
                         val algorithm = param.args[0] as String
                         val keystore = param.args[1] as? KeyStore
                         val keystorePassword = param.args[2] as? String
@@ -140,8 +136,7 @@ object ApacheHttpHook {
                 "getSocketFactory",
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("apache")) return
+                        if (!HookPrefs.isHookActive("apache")) return
                         param.result = newInstance(SSLSocketFactory::class.java)
                     }
                 }
@@ -156,8 +151,7 @@ object ApacheHttpHook {
                 "isSecure", Socket::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("apache")) return
+                        if (!HookPrefs.isHookActive("apache")) return
                         param.result = null
                     }
                 }
@@ -176,8 +170,7 @@ object ApacheHttpHook {
                 "register", Scheme::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("apache")) return
+                        if (!HookPrefs.isHookActive("apache")) return
                         val scheme = param.args[0] as Scheme
                         if (scheme.name == "https") {
                             param.args[0] = Scheme("https", SSLSocketFactory.getSocketFactory(), 443)

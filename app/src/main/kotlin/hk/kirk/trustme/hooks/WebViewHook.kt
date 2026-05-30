@@ -6,7 +6,7 @@ import android.webkit.WebView
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import hk.kirk.trustme.utils.Logger
-import hk.kirk.trustme.utils.PrefsHelper
+import hk.kirk.trustme.xprefs.HookPrefs
 
 /**
  * WebView SSL 错误处理 Hook
@@ -22,8 +22,7 @@ object WebViewHook {
                 WebView::class.java, SslErrorHandler::class.java, SslError::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("webview")) return
+                        if (!HookPrefs.isHookActive("webview")) return
                         (param.args[1] as SslErrorHandler).proceed()
                         Logger.d("WebViewClient.onReceivedSslError → 已自动 proceed")
                         param.result = null
@@ -43,8 +42,7 @@ object WebViewHook {
                 String::class.java, String::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("webview")) return
+                        if (!HookPrefs.isHookActive("webview")) return
                         param.result = null
                     }
                 }

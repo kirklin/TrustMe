@@ -4,7 +4,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.XposedHelpers.findClass
 import hk.kirk.trustme.utils.Logger
-import hk.kirk.trustme.utils.PrefsHelper
+import hk.kirk.trustme.xprefs.HookPrefs
 
 /**
  * Conscrypt PinManager Hook
@@ -24,8 +24,7 @@ object PinManagerHook {
                     "isChainValid", String::class.java, List::class.java,
                     object : XC_MethodHook() {
                         override fun beforeHookedMethod(param: MethodHookParam) {
-                            PrefsHelper.reload()
-                            if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("pinmanager")) return
+                            if (!HookPrefs.isHookActive("pinmanager")) return
                             param.result = true
                         }
                     }
@@ -41,8 +40,7 @@ object PinManagerHook {
                     params.addAll(method.parameterTypes.toList())
                     params.add(object : XC_MethodHook() {
                         override fun beforeHookedMethod(param: MethodHookParam) {
-                            PrefsHelper.reload()
-                            if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("pinmanager")) return
+                            if (!HookPrefs.isHookActive("pinmanager")) return
                             param.result = null
                         }
                     })

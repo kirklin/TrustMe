@@ -3,7 +3,7 @@ package hk.kirk.trustme.hooks
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import hk.kirk.trustme.utils.Logger
-import hk.kirk.trustme.utils.PrefsHelper
+import hk.kirk.trustme.xprefs.HookPrefs
 
 /**
  * Chromium Cronet 引擎 Hook
@@ -22,8 +22,7 @@ object CronetHook {
                 Boolean::class.javaPrimitiveType,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("cronet")) return
+                        if (!HookPrefs.isHookActive("cronet")) return
                         param.args[0] = true
                         Logger.d("CronetEngine.Builder.enablePublicKeyPinningBypass → true")
                     }
@@ -44,8 +43,7 @@ object CronetHook {
                 Boolean::class.javaPrimitiveType,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("cronet")) return
+                        if (!HookPrefs.isHookActive("cronet")) return
                         param.args[0] = true
                     }
                 }

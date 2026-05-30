@@ -4,7 +4,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import hk.kirk.trustme.trust.TrustAllManager
 import hk.kirk.trustme.utils.Logger
-import hk.kirk.trustme.utils.PrefsHelper
+import hk.kirk.trustme.xprefs.HookPrefs
 import java.security.SecureRandom
 import javax.net.ssl.KeyManager
 import javax.net.ssl.TrustManager
@@ -28,8 +28,7 @@ object SSLContextHook {
                 SecureRandom::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("sslcontext")) return
+                        if (!HookPrefs.isHookActive("sslcontext")) return
                         param.args[0] = null
                         param.args[1] = TrustAllManager.getBestInstanceArray()
                         param.args[2] = null

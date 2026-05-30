@@ -5,7 +5,7 @@ import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.XposedHelpers.findClass
 import hk.kirk.trustme.utils.Logger
-import hk.kirk.trustme.utils.PrefsHelper
+import hk.kirk.trustme.xprefs.HookPrefs
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import java.security.cert.X509Certificate
@@ -30,8 +30,7 @@ object TrustManagerImplHook {
      */
     private fun createDynamicReplacement() = object : XC_MethodHook() {
         override fun beforeHookedMethod(param: MethodHookParam) {
-            PrefsHelper.reload()
-            if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("conscrypt")) {
+            if (!HookPrefs.isHookActive("conscrypt")) {
                 // 开关关闭，不拦截，让原始方法正常执行
                 return
             }
@@ -92,8 +91,7 @@ object TrustManagerImplHook {
                 Array<X509Certificate>::class.java, String::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("conscrypt")) return
+                        if (!HookPrefs.isHookActive("conscrypt")) return
                         Logger.d("TrustManagerImpl.checkServerTrusted(cert[], String) → 已绕过")
                         param.result = null
                     }

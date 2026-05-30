@@ -3,7 +3,7 @@ package hk.kirk.trustme.hooks
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import hk.kirk.trustme.utils.Logger
-import hk.kirk.trustme.utils.PrefsHelper
+import hk.kirk.trustme.xprefs.HookPrefs
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLSocketFactory
 
@@ -15,8 +15,7 @@ object HttpsURLConnectionHook {
     fun hook(classLoader: ClassLoader) {
         val callback = object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
-                PrefsHelper.reload()
-                if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("urlconnection")) return
+                if (!HookPrefs.isHookActive("urlconnection")) return
                 param.result = null
             }
         }

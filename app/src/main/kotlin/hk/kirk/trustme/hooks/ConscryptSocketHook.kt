@@ -4,7 +4,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.XposedHelpers.findClass
 import hk.kirk.trustme.utils.Logger
-import hk.kirk.trustme.utils.PrefsHelper
+import hk.kirk.trustme.xprefs.HookPrefs
 
 /**
  * Conscrypt Socket 层验证 Hook
@@ -41,8 +41,7 @@ object ConscryptSocketHook {
                     params.addAll(method.parameterTypes.toList())
                     params.add(object : XC_MethodHook() {
                         override fun beforeHookedMethod(param: MethodHookParam) {
-                            PrefsHelper.reload()
-                            if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("conscryptsocket")) return
+                            if (!HookPrefs.isHookActive("conscryptsocket")) return
                             param.result = null
                         }
                     })
@@ -68,8 +67,7 @@ object ConscryptSocketHook {
                     params.addAll(method.parameterTypes.toList())
                     params.add(object : XC_MethodHook() {
                         override fun beforeHookedMethod(param: MethodHookParam) {
-                            PrefsHelper.reload()
-                            if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("conscryptsocket")) return
+                            if (!HookPrefs.isHookActive("conscryptsocket")) return
                             param.result = null
                         }
                     })

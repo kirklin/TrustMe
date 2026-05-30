@@ -10,7 +10,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import hk.kirk.trustme.hooks.*
 import hk.kirk.trustme.utils.Logger
 import hk.kirk.trustme.utils.LogFileWriter
-import hk.kirk.trustme.utils.PrefsHelper
+import hk.kirk.trustme.xprefs.XposedPrefs
 
 /**
  * TrustMe main entry point
@@ -24,7 +24,11 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
     companion object {
         private const val TAG = "TrustMe"
         private const val MY_PACKAGE = "hk.kirk.trustme"
+        private const val PREFS_NAME = "trustme_prefs"
     }
+
+    /** Hook 端的配置桥 — 通过 XposedPrefs 读取模块 UI 端的设置 */
+    private val prefs = XposedPrefs.hook(MY_PACKAGE, PREFS_NAME)
 
     // ==========================================
     // Zygote 级别初始化（对所有进程生效）
@@ -33,9 +37,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
     override fun initZygote(startupParam: IXposedHookZygoteInit.StartupParam) {
         Logger.i("$TAG initZygote — 模块正在加载...")
 
-        // 初始化 Preferences
-        PrefsHelper.init()
-        Logger.i("$TAG Prefs 可读: ${PrefsHelper.canReadPrefs()}, 全局开关: ${PrefsHelper.isEnabled()}")
+        Logger.i("$TAG Prefs 可读: ${prefs.isAvailable}, 全局开关: ${prefs.getBoolean("enabled", true)}")
 
         // Zygote 级别：动态反射 Hook TrustManagerImpl.checkTrustedRecursive
         // 这是最底层的 Hook 点，无需 ClassLoader
@@ -76,16 +78,16 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
         }
 
         // 重新加载配置
-        PrefsHelper.reload()
+        prefs.reload()
 
         // 检查全局开关
-        if (!PrefsHelper.isEnabled()) {
-            Logger.i("全局开关已关闭，跳过 ${lpparam.packageName} (prefs可读: ${PrefsHelper.canReadPrefs()})")
+        if (!prefs.getBoolean("enabled", true)) {
+            Logger.i("全局开关已关闭，跳过 ${lpparam.packageName} (prefs可读: ${prefs.isAvailable})")
             return
         }
 
         // 更新日志开关
-        Logger.setLoggingEnabled(PrefsHelper.isLoggingEnabled())
+        Logger.setLoggingEnabled(prefs.getBoolean("logging", true))
 
         Logger.d("处理 App: ${lpparam.packageName}")
         LogFileWriter.init(lpparam.packageName)
@@ -159,7 +161,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
      * 安全执行 Hook，单个 Hook 失败不影响其他模块
      */
     private fun hookSafely(hookName: String, block: () -> Unit) {
-        if (!PrefsHelper.isHookEnabled(hookName.lowercase())) {
+        if (!prefs.getBoolean("hook_${hookName.lowercase()}", true)) {
             Logger.d("$hookName Hook 已禁用，跳过")
             return
         }

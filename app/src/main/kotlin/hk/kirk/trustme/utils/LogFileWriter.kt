@@ -15,10 +15,14 @@ import java.io.FileWriter
  */
 object LogFileWriter {
 
-    private const val LOG_DIR = "/data/data/hk.kirk.trustme/shared_prefs"
+    private const val MODULE_PACKAGE = "hk.kirk.trustme"
     private const val LOG_FILE = "trustme_logs.jsonl"
     private const val MAX_LINES = 500
     private val lock = Any()
+
+    /** 日志目录路径 — 通过标准 Android 数据路径定位 */
+    private val logDir: File
+        get() = File("/data/data/$MODULE_PACKAGE/shared_prefs")
 
     private var currentApp: String = ""
 
@@ -35,7 +39,7 @@ object LogFileWriter {
     fun write(app: String, hook: String, msg: String) {
         try {
             synchronized(lock) {
-                val dir = File(LOG_DIR)
+                val dir = logDir
                 if (!dir.exists()) return // 模块未安装则跳过
                 val file = File(dir, LOG_FILE)
                 val entry = JSONObject().apply {

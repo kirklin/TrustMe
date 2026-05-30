@@ -4,7 +4,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import hk.kirk.trustme.trust.TrustAllManager
 import hk.kirk.trustme.utils.Logger
-import hk.kirk.trustme.utils.PrefsHelper
+import hk.kirk.trustme.xprefs.HookPrefs
 import java.security.cert.X509Certificate
 
 /**
@@ -22,8 +22,7 @@ object TrustManagerHook {
                 "getTrustManagers",
                 object : XC_MethodHook() {
                     override fun afterHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("trustmanager")) return
+                        if (!HookPrefs.isHookActive("trustmanager")) return
 
                         val managers = param.result as? Array<*>
                         if (managers == null || managers.isEmpty()) return
@@ -61,8 +60,7 @@ object TrustManagerHook {
                 String::class.java,
                 object : XC_MethodHook() {
                     override fun beforeHookedMethod(param: MethodHookParam) {
-                        PrefsHelper.reload()
-                        if (!PrefsHelper.isEnabled() || !PrefsHelper.isHookEnabled("trustmanager")) return
+                        if (!HookPrefs.isHookActive("trustmanager")) return
 
                         // 返回类型必须是 List<X509Certificate>，不能直接返回 Array
                         @Suppress("UNCHECKED_CAST")

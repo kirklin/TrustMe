@@ -1,14 +1,12 @@
 package hk.kirk.trustme.ui
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import hk.kirk.trustme.ui.theme.TrustMeTheme
-import java.io.File
+import hk.kirk.trustme.xprefs.XposedPrefs
 
 /**
  * 设置界面 — Jetpack Compose 实现
@@ -36,14 +34,11 @@ class SettingsActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-        val prefs = try {
-            getSharedPreferences(PREFS_NAME, Context.MODE_WORLD_READABLE)
-        } catch (_: Exception) {
-            getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        }
+        // 使用 XposedPrefs 桥接 — 自动处理 MODE_WORLD_READABLE / fallback / 权限
+        val prefs = XposedPrefs.module(this, PREFS_NAME)
 
-        // 确保 prefs 文件和目录对其他进程可读
-        makePrefsWorldReadable()
+        // 确保日志文件对 Hook 进程可读可写
+        prefs.makeFileWorldWritable("trustme_logs.jsonl")
 
         val versionName = try {
             packageManager.getPackageInfo(packageName, 0).versionName ?: "1.0.0"
@@ -51,52 +46,14 @@ class SettingsActivity : ComponentActivity() {
             "1.0.0"
         }
 
-        val prefAccessor = PrefAccessor(prefs, ::makePrefsWorldReadable)
-
         setContent {
             TrustMeTheme {
                 SettingsScreen(
                     isModuleActive = isModuleActive,
                     versionName = versionName,
-                    prefs = prefAccessor,
+                    prefs = prefs,
                 )
             }
         }
     }
-
-    /**
-     * 手动设置 prefs 文件及其父目录为 world-readable,
-     * 同时确保 shared_prefs 目录 world-writable 以便 Hook 进程写入日志
-     */
-    private fun makePrefsWorldReadable() {
-        try {
-            val prefsDir = File(applicationInfo.dataDir, "shared_prefs")
-            val prefsFile = File(prefsDir, "$PREFS_NAME.xml")
-            val logFile = File(prefsDir, "trustme_logs.jsonl")
-
-            // 确保 data 目录本身可访问
-            val dataDir = File(applicationInfo.dataDir)
-            dataDir.setExecutable(true, false)
-
-            // 目录权限：owner rwx, other rwx (777) — 允许 Hook 进程写入日志
-            prefsDir.setReadable(true, false)
-            prefsDir.setWritable(true, false)
-            prefsDir.setExecutable(true, false)
-
-            // prefs 文件：world-readable
-            if (prefsFile.exists()) {
-                prefsFile.setReadable(true, false)
-            }
-
-            // 日志文件：world-readable + world-writable
-            if (!logFile.exists()) {
-                logFile.createNewFile()
-            }
-            logFile.setReadable(true, false)
-            logFile.setWritable(true, false)
-        } catch (e: Exception) {
-            android.util.Log.e("TrustMe", "Failed to set prefs permissions", e)
-        }
-    }
 }
-
