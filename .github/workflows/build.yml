@@ -2,16 +2,9 @@ name: Build & Release
 
 on:
   push:
-    branches: [main]
     tags: ['v*']
   pull_request:
     branches: [main]
-
-# When a tag push and branch push happen for the same commit,
-# cancel the branch run in favor of the tag run.
-concurrency:
-  group: build-${{ github.sha }}
-  cancel-in-progress: true
 
 jobs:
   build:
