@@ -65,26 +65,35 @@ class SettingsActivity : ComponentActivity() {
     }
 
     /**
-     * 手动设置 prefs 文件及其父目录为 world-readable
-     * 这是 LSPosed 模块在新版 Android 上的标准 workaround
+     * 手动设置 prefs 文件及其父目录为 world-readable,
+     * 同时确保 shared_prefs 目录 world-writable 以便 Hook 进程写入日志
      */
     private fun makePrefsWorldReadable() {
         try {
             val prefsDir = File(applicationInfo.dataDir, "shared_prefs")
             val prefsFile = File(prefsDir, "$PREFS_NAME.xml")
+            val logFile = File(prefsDir, "trustme_logs.jsonl")
 
-            // 设置目录权限：owner rwx, group rx, other rx (755)
+            // 确保 data 目录本身可访问
+            val dataDir = File(applicationInfo.dataDir)
+            dataDir.setExecutable(true, false)
+
+            // 目录权限：owner rwx, other rwx (777) — 允许 Hook 进程写入日志
             prefsDir.setReadable(true, false)
+            prefsDir.setWritable(true, false)
             prefsDir.setExecutable(true, false)
 
-            // 设置文件权限：owner rw, group r, other r (644)
+            // prefs 文件：world-readable
             if (prefsFile.exists()) {
                 prefsFile.setReadable(true, false)
             }
 
-            // 同时确保 data 目录本身可访问
-            val dataDir = File(applicationInfo.dataDir)
-            dataDir.setExecutable(true, false)
+            // 日志文件：world-readable + world-writable
+            if (!logFile.exists()) {
+                logFile.createNewFile()
+            }
+            logFile.setReadable(true, false)
+            logFile.setWritable(true, false)
         } catch (e: Exception) {
             android.util.Log.e("TrustMe", "Failed to set prefs permissions", e)
         }
