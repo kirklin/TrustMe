@@ -11,8 +11,8 @@ android {
         applicationId = "hk.kirk.trustme"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.0.3"
+        versionCode = 5
+        versionName = "1.0.4"
     }
 
     signingConfigs {
@@ -49,6 +49,19 @@ android {
 
     // Apache HTTP legacy 库支持
     useLibrary("org.apache.http.legacy")
+}
+
+// Rename APK output: TrustMe-v1.0.3-release.apk
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
+                val buildType = variant.buildType ?: "debug"
+                val version = variant.outputs.first().versionName.get()
+                output.outputFileName.set("TrustMe-v${version}-${buildType}.apk")
+            }
+        }
+    }
 }
 
 dependencies {
