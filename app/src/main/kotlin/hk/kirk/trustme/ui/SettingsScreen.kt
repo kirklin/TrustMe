@@ -3,13 +3,13 @@ package hk.kirk.trustme.ui
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
@@ -26,10 +26,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import hk.kirk.trustme.ui.components.Divider
+import hk.kirk.trustme.ui.components.CardDivider
 import hk.kirk.trustme.ui.components.InfoRow
+import hk.kirk.trustme.ui.components.SectionCard
 import hk.kirk.trustme.ui.components.SectionHeader
-import hk.kirk.trustme.ui.components.StatusRow
+import hk.kirk.trustme.ui.components.StatusCard
 import hk.kirk.trustme.ui.components.SwitchRow
 import hk.kirk.trustme.ui.theme.TrustMe
 
@@ -72,11 +73,11 @@ private fun SettingsContent(
             .verticalScroll(rememberScrollState())
             .windowInsetsPadding(WindowInsets.navigationBars),
     ) {
-        // ── 顶栏 ──
+        // ── Top Bar ──
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .padding(horizontal = 20.dp, vertical = 18.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             BasicText(
@@ -86,82 +87,84 @@ private fun SettingsContent(
             Spacer(modifier = Modifier.weight(1f))
             BasicText(
                 text = "v$versionName",
-                style = type.bodySmall.copy(color = colors.textSecondary),
+                style = type.bodySmall.copy(color = colors.textTertiary),
             )
         }
 
-        Divider()
+        // ── Status Card ──
+        StatusCard(isActive = isModuleActive)
 
-        // ── 状态 ──
-        StatusRow(isActive = isModuleActive)
-
-        Divider()
-
-        // ── 常规设置 ──
+        // ── General Settings ──
         SectionHeader(title = "常规设置")
-        SwitchRow(
-            title = "全局开关",
-            subtitle = "启用/禁用所有 SSL Pinning 绕过",
-            checked = prefs.getBoolean("enabled", true),
-            onCheckedChange = { prefs.putBoolean("enabled", it) },
-        )
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        SwitchRow(
-            title = "Hook 日志",
-            subtitle = "记录每次被绕过的 SSL 验证调用",
-            checked = prefs.getBoolean("logging", true),
-            onCheckedChange = { prefs.putBoolean("logging", it) },
-        )
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        InfoRow(
-            title = "查看日志",
-            subtitle = "查看 Hook 触发记录",
-            showArrow = true,
-            onClick = onShowLogs,
-        )
+        SectionCard {
+            SwitchRow(
+                title = "全局开关",
+                subtitle = "启用/禁用所有 SSL Pinning 绕过",
+                checked = prefs.getBoolean("enabled", true),
+                onCheckedChange = { prefs.putBoolean("enabled", it) },
+            )
+            CardDivider()
+            SwitchRow(
+                title = "Hook 日志",
+                subtitle = "记录每次被绕过的 SSL 验证调用",
+                checked = prefs.getBoolean("logging", true),
+                onCheckedChange = { prefs.putBoolean("logging", it) },
+            )
+            CardDivider()
+            InfoRow(
+                title = "查看日志",
+                subtitle = "查看 Hook 触发记录",
+                showArrow = true,
+                onClick = onShowLogs,
+            )
+        }
 
-        // ── Hook 模块 ──
+        // ── Hook Modules ──
         SectionHeader(title = "Hook 模块")
-        HookItem(prefs, "hook_sslcontext", "SSLContext.init", "替换 TrustManager 为信任一切的实现")
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        HookItem(prefs, "hook_trustmanager", "TrustManager", "绕过证书验证方法")
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        HookItem(prefs, "hook_conscrypt", "Conscrypt TrustManagerImpl", "动态反射绕过 checkTrustedRecursive / verifyChain")
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        HookItem(prefs, "hook_okhttp", "OkHttp 2.x / 3.x / 4.x+", "绕过 CertificatePinner 和 OkHostnameVerifier")
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        HookItem(prefs, "hook_urlconnection", "HttpsURLConnection", "无效化 HostnameVerifier 和 SSLSocketFactory")
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        HookItem(prefs, "hook_webview", "WebView", "自动处理 WebView SSL 错误")
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        HookItem(prefs, "hook_apache", "Apache HTTP Client", "替换 DefaultHttpClient 和 SSLSocketFactory")
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        HookItem(prefs, "hook_nsc", "Network Security Config", "绕过 Android 7+ 网络安全配置")
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        HookItem(prefs, "hook_conscryptsocket", "Conscrypt Socket", "绕过底层 Socket 证书链验证")
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        HookItem(prefs, "hook_pinmanager", "Conscrypt PinManager", "绕过 Conscrypt 内置 Pin 管理")
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        HookItem(prefs, "hook_cronet", "Cronet 引擎", "绕过 Chromium Cronet SSL 配置")
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        HookItem(prefs, "hook_thirdparty", "第三方库", "xutils / httpclientandroidlib")
+        SectionCard {
+            HookItem(prefs, "hook_sslcontext", "SSLContext.init", "替换 TrustManager 为信任一切的实现")
+            CardDivider()
+            HookItem(prefs, "hook_trustmanager", "TrustManager", "绕过证书验证方法")
+            CardDivider()
+            HookItem(prefs, "hook_conscrypt", "Conscrypt TrustManagerImpl", "动态反射绕过 checkTrustedRecursive / verifyChain")
+            CardDivider()
+            HookItem(prefs, "hook_okhttp", "OkHttp 2.x / 3.x / 4.x+", "绕过 CertificatePinner 和 OkHostnameVerifier")
+            CardDivider()
+            HookItem(prefs, "hook_urlconnection", "HttpsURLConnection", "无效化 HostnameVerifier 和 SSLSocketFactory")
+            CardDivider()
+            HookItem(prefs, "hook_webview", "WebView", "自动处理 WebView SSL 错误")
+            CardDivider()
+            HookItem(prefs, "hook_apache", "Apache HTTP Client", "替换 DefaultHttpClient 和 SSLSocketFactory")
+            CardDivider()
+            HookItem(prefs, "hook_nsc", "Network Security Config", "绕过 Android 7+ 网络安全配置")
+            CardDivider()
+            HookItem(prefs, "hook_conscryptsocket", "Conscrypt Socket", "绕过底层 Socket 证书链验证")
+            CardDivider()
+            HookItem(prefs, "hook_pinmanager", "Conscrypt PinManager", "绕过 Conscrypt 内置 Pin 管理")
+            CardDivider()
+            HookItem(prefs, "hook_cronet", "Cronet 引擎", "绕过 Chromium Cronet SSL 配置")
+            CardDivider()
+            HookItem(prefs, "hook_thirdparty", "第三方库", "xutils / httpclientandroidlib")
+        }
 
-        // ── 关于 ──
+        // ── About ──
         SectionHeader(title = "关于")
-        InfoRow(title = "作者", subtitle = "Kirk Lin")
-        Divider(modifier = Modifier.padding(start = 20.dp))
-        InfoRow(
-            title = "GitHub",
-            subtitle = "github.com/kirklin",
-            showArrow = true,
-            onClick = {
-                context.startActivity(
-                    Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/kirklin"))
-                )
-            },
-        )
+        SectionCard {
+            InfoRow(title = "作者", subtitle = "Kirk Lin")
+            CardDivider()
+            InfoRow(
+                title = "GitHub",
+                subtitle = "github.com/kirklin",
+                showArrow = true,
+                onClick = {
+                    context.startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/kirklin"))
+                    )
+                },
+            )
+        }
 
-        Spacer(modifier = Modifier.padding(bottom = 32.dp))
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
@@ -187,10 +190,10 @@ class PrefAccessor(
 
     fun putBoolean(key: String, value: Boolean) {
         getOrCreate(key, prefs.getBoolean(key, true)).value = value
-        prefs.edit().putBoolean(key, value).commit()  // 用 commit() 确保同步写入
-        onPrefsChanged?.invoke()  // 写入后修复文件权限
+        prefs.edit().putBoolean(key, value).commit()  // commit() for synchronous write
+        onPrefsChanged?.invoke()  // fix file permissions after write
     }
 
     private fun getOrCreate(key: String, default: Boolean) =
-        states.getOrPut(key) { mutableStateOf(prefs.getBoolean(key, default)) }
+        states.getOrPut(key) { androidx.compose.runtime.mutableStateOf(prefs.getBoolean(key, default)) }
 }

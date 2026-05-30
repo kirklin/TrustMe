@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import hk.kirk.trustme.ui.theme.TrustMe
 
@@ -30,13 +31,17 @@ fun SwitchRow(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
             BasicText(
                 text = title,
-                style = (if (isMono) type.mono else type.body).copy(color = colors.textPrimary),
+                style = if (isMono) {
+                    type.mono.copy(color = colors.textPrimary)
+                } else {
+                    type.body.copy(color = colors.textPrimary)
+                },
             )
             Spacer(modifier = Modifier.height(2.dp))
             BasicText(

@@ -1,7 +1,9 @@
 package hk.kirk.trustme.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,7 +25,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import hk.kirk.trustme.ui.components.Divider
 import hk.kirk.trustme.ui.theme.TrustMe
@@ -35,6 +37,7 @@ fun LogScreen(onBack: () -> Unit) {
 
     val colors = TrustMe.colors
     val type = TrustMe.type
+    val shapes = TrustMe.shapes
     val context = androidx.compose.ui.platform.LocalContext.current
     val logs = remember { mutableStateListOf<LogFileReader.LogEntry>() }
 
@@ -50,11 +53,11 @@ fun LogScreen(onBack: () -> Unit) {
             .windowInsetsPadding(WindowInsets.statusBars)
             .windowInsetsPadding(WindowInsets.navigationBars),
     ) {
-        // ── 顶栏 ──
+        // ── Top Bar ──
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .padding(horizontal = 20.dp, vertical = 18.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             BasicText(
@@ -102,14 +105,18 @@ fun LogScreen(onBack: () -> Unit) {
             ) {
                 BasicText(
                     text = "暂无日志",
-                    style = type.body.copy(color = colors.textSecondary),
+                    style = type.body.copy(color = colors.textTertiary),
                 )
             }
         } else {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 items(logs.size) { index ->
-                    LogEntryRow(logs[index])
-                    Divider()
+                    LogEntryCard(logs[index])
                 }
             }
         }
@@ -117,46 +124,59 @@ fun LogScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun LogEntryRow(entry: LogFileReader.LogEntry) {
+private fun LogEntryCard(entry: LogFileReader.LogEntry) {
     val colors = TrustMe.colors
     val type = TrustMe.type
+    val shapes = TrustMe.shapes
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 10.dp),
+            .clip(RoundedCornerShape(shapes.inner))
+            .background(colors.surface)
+            .border(
+                width = 1.dp,
+                color = colors.border,
+                shape = RoundedCornerShape(shapes.inner),
+            )
+            .padding(14.dp),
     ) {
-        // 第一行: 包名 + hook 名
+        // First line: app name + hook tag
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             BasicText(
                 text = entry.app,
                 style = type.mono.copy(color = colors.textPrimary),
                 modifier = Modifier.weight(1f).padding(end = 12.dp),
             )
+            // Hook tag
             BasicText(
                 text = entry.hook,
-                style = type.bodySmall.copy(color = colors.textSecondary),
+                style = type.label.copy(color = colors.textSecondary),
+                modifier = Modifier
+                    .clip(RoundedCornerShape(shapes.chip))
+                    .background(colors.border)
+                    .padding(horizontal = 6.dp, vertical = 2.dp),
             )
         }
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
-        // 第二行: 消息
+        // Message
         BasicText(
             text = entry.message,
             style = type.bodySmall.copy(color = colors.textSecondary),
         )
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
-        // 第三行: 相对时间
+        // Relative time
         BasicText(
             text = relativeTime(entry.timestamp),
-            style = type.bodySmall.copy(color = Color(0xFF333639)),
+            style = type.label.copy(color = colors.textTertiary),
         )
     }
 }
