@@ -1,10 +1,17 @@
 package hk.kirk.trustme.hooks
 
+import android.content.pm.ApplicationInfo
+import dalvik.system.DexFile
 import de.robv.android.xposed.XC_MethodHook
-import hk.kirk.trustme.xprefs.HookPrefs
+import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import hk.kirk.trustme.utils.Logger
+import hk.kirk.trustme.xprefs.HookPrefs
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 import java.security.cert.X509Certificate
+import java.util.Collections
+import java.util.WeakHashMap
 import javax.net.ssl.SSLSession
 
 /**
@@ -14,12 +21,19 @@ import javax.net.ssl.SSLSession
  */
 object OkHttpHook {
 
-    fun hook(classLoader: ClassLoader) {
+    private val scannedClassLoaders: MutableSet<ClassLoader> =
+        Collections.newSetFromMap(WeakHashMap<ClassLoader, Boolean>())
+
+    private val hookedRelocatedMethods: MutableSet<String> =
+        Collections.synchronizedSet(mutableSetOf())
+
+    fun hook(classLoader: ClassLoader, appInfo: ApplicationInfo? = null) {
         hookOkHttp2(classLoader)
         hookOkHttp3(classLoader)
         hookOkHttp4(classLoader)
         hookOkHostnameVerifier(classLoader)
         hookFindMatchingPins(classLoader)
+        hookRelocatedCertificatePinners(classLoader, appInfo)
     }
 
     /** OkHttp 2.x — com.squareup.okhttp.CertificatePinner */
@@ -151,6 +165,169 @@ object OkHttpHook {
         } catch (_: NoSuchMethodError) {
         } catch (e: Throwable) {
             Logger.e("findMatchingPins Hook 失败", e)
+        }
+    }
+
+    /**
+     * Apps may relocate and obfuscate OkHttp, so the canonical
+     * okhttp3.CertificatePinner class name is not always present. The OkHttp
+     * pinner shape is still stable enough to detect: a class with a Set field
+     * named "pins" and a void check-like method whose first argument is a host
+     * and whose second argument is the peer certificate chain or a lazy chain
+     * provider.
+     */
+    private fun hookRelocatedCertificatePinners(classLoader: ClassLoader, appInfo: ApplicationInfo?) {
+        if (appInfo == null) return
+
+        synchronized(scannedClassLoaders) {
+            if (!scannedClassLoaders.add(classLoader)) return
+        }
+
+        val dexPaths = appDexPaths(appInfo)
+        if (dexPaths.isEmpty()) return
+
+        var hookedCount = 0
+        for (className in dexPaths.asSequence().flatMap(::dexClassNames)) {
+            if (!shouldInspectRelocatedClass(className)) continue
+
+            val clazz = try {
+                Class.forName(className, false, classLoader)
+            } catch (_: Throwable) {
+                continue
+            }
+
+            val checkMethods = relocatedCheckMethods(clazz)
+            if (!isRelocatedCertificatePinner(clazz, checkMethods)) continue
+
+            checkMethods.forEach { method ->
+                if (hookRelocatedCheckMethod(method)) {
+                    hookedCount++
+                }
+            }
+        }
+
+        if (hookedCount > 0) {
+            Logger.d("Relocated OkHttp CertificatePinner methods → 已绕过 $hookedCount 个")
+        }
+    }
+
+    private fun appDexPaths(appInfo: ApplicationInfo): List<String> {
+        val paths = mutableListOf<String>()
+        appInfo.sourceDir?.takeIf { it.isNotBlank() }?.let(paths::add)
+        appInfo.splitSourceDirs?.filterTo(paths) { it.isNotBlank() }
+        return paths.distinct()
+    }
+
+    private fun dexClassNames(dexPath: String): Sequence<String> = sequence {
+        val dexFile = try {
+            DexFile(dexPath)
+        } catch (e: Throwable) {
+            Logger.d("无法读取 Dex: $dexPath (${e.message})")
+            return@sequence
+        }
+
+        try {
+            val entries = dexFile.entries()
+            while (entries.hasMoreElements()) {
+                yield(entries.nextElement())
+            }
+        } finally {
+            try {
+                dexFile.close()
+            } catch (_: Throwable) {
+            }
+        }
+    }
+
+    private fun shouldInspectRelocatedClass(className: String): Boolean {
+        if (className == "okhttp3.CertificatePinner") return false
+        if (className == "com.squareup.okhttp.CertificatePinner") return false
+
+        return !className.startsWith("android.") &&
+            !className.startsWith("androidx.") &&
+            !className.startsWith("com.android.") &&
+            !className.startsWith("java.") &&
+            !className.startsWith("javax.") &&
+            !className.startsWith("kotlin.") &&
+            !className.startsWith("kotlinx.") &&
+            !className.startsWith("sun.")
+    }
+
+    private fun isRelocatedCertificatePinner(clazz: Class<*>, checkMethods: List<Method>): Boolean {
+        val hasPinsField = try {
+            clazz.declaredFields.any { field ->
+                field.name == "pins" && Set::class.java.isAssignableFrom(field.type)
+            }
+        } catch (_: Throwable) {
+            false
+        }
+        return hasPinsField && checkMethods.isNotEmpty()
+    }
+
+    private fun relocatedCheckMethods(clazz: Class<*>): List<Method> {
+        val methods = try {
+            clazz.declaredMethods
+        } catch (_: Throwable) {
+            return emptyList()
+        }
+
+        return methods.filter { method ->
+            method.returnType == Void.TYPE &&
+                method.parameterTypes.size == 2 &&
+                method.parameterTypes[0] == String::class.java &&
+                isCertificateChainParameter(method.parameterTypes[1]) &&
+                !Modifier.isAbstract(method.modifiers) &&
+                !Modifier.isNative(method.modifiers)
+        }
+    }
+
+    private fun isCertificateChainParameter(type: Class<*>): Boolean {
+        if (List::class.java.isAssignableFrom(type)) return true
+        if (type.isPrimitive || type.isArray || type == String::class.java) return false
+
+        val methods = try {
+            type.methods
+        } catch (_: Throwable) {
+            return false
+        }
+
+        return methods.any { method ->
+            method.parameterTypes.isEmpty() &&
+                method.returnType != Void.TYPE &&
+                method.declaringClass != Any::class.java &&
+                !Modifier.isStatic(method.modifiers)
+        }
+    }
+
+    private fun hookRelocatedCheckMethod(method: Method): Boolean {
+        val key = buildString {
+            append(method.declaringClass.name)
+            append('#')
+            append(method.name)
+            append('(')
+            append(method.parameterTypes.joinToString(",") { it.name })
+            append(')')
+        }
+
+        if (!hookedRelocatedMethods.add(key)) return false
+
+        return try {
+            method.isAccessible = true
+            XposedBridge.hookMethod(
+                method,
+                object : XC_MethodHook() {
+                    override fun beforeHookedMethod(param: MethodHookParam) {
+                        if (!HookPrefs.isHookActive("okhttp")) return
+                        param.result = null
+                    }
+                }
+            )
+            Logger.d("Relocated OkHttp CertificatePinner ${method.declaringClass.name}.${method.name} → 已绕过")
+            true
+        } catch (e: Throwable) {
+            hookedRelocatedMethods.remove(key)
+            Logger.d("Relocated OkHttp CertificatePinner ${method.declaringClass.name}.${method.name} Hook 跳过: ${e.message}")
+            false
         }
     }
 }
