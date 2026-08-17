@@ -179,6 +179,8 @@ object OkHttpHook {
     private fun hookRelocatedCertificatePinners(classLoader: ClassLoader, appInfo: ApplicationInfo?) {
         if (appInfo == null) return
 
+        if (!HookPrefs.isHookActive("okhttp")) return
+
         synchronized(scannedClassLoaders) {
             if (!scannedClassLoaders.add(classLoader)) return
         }
