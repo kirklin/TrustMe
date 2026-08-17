@@ -133,7 +133,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
                         val appClassLoader = context.classLoader
 
                         // 9. OkHttp (2.x / 3.x / 4.x+)
-                        hookSafely("OkHttp") { OkHttpHook.hook(appClassLoader) }
+                        hookSafely("OkHttp") { OkHttpHook.hook(appClassLoader, context.applicationInfo) }
 
                         // 10. Apache HTTP Client
                         hookSafely("Apache") { ApacheHttpHook.hook(appClassLoader) }
@@ -150,7 +150,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
             Logger.e("Hook Application.attach 失败", e)
 
             // 回退：直接在当前 ClassLoader 中尝试
-            hookSafely("OkHttp") { OkHttpHook.hook(cl) }
+            hookSafely("OkHttp") { OkHttpHook.hook(cl, lpparam.appInfo) }
             hookSafely("Apache") { ApacheHttpHook.hook(cl) }
             hookSafely("Cronet") { CronetHook.hook(cl) }
             hookSafely("ThirdParty") { ThirdPartyHook.hook(cl) }
